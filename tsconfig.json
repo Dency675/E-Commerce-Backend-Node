@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+      "target": "es2016",
+      "module": "commonjs",  // Change to "commonjs" instead of "NodeNext"
+      "outDir": "./dist",
+      "strict": true, //to check the type every time
+      "esModuleInterop": true, // to accept common js modules
+      "moduleResolution": "node",
+      "allowImportingTsExtensions": true, //to allow to import .ts files
+      "noEmit": true,
+    },
+    "include": ["src/**/*.ts","types/**/*.ts"], // all the files in the src folder, its subfolders and types folder , its subfolders
+    "exclude": ["node_modules", "dist"]
+  }
+  
