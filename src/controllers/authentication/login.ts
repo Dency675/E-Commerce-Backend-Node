@@ -17,16 +17,24 @@ const login = async (req: Request, res: Response): Promise<void> => {
 
       if (bcrypt.compareSync(password, found?.password as string)) {
         const token = jwt.sign(
+          // {
+          //   //payloads
+          //   userID: found?.registration_id,
+          //   client_type,
+          // },
           {
-            //payloads
             userID: found?.registration_id,
+            registrationId: found?.registration_id,
             client_type,
           },
           "your-secret-key",
           { expiresIn: "24h" } //token expiration time
         );
+
+        res.status(200).json({ token });
+
         // res.send(`message : login successfully`);
-        res.json(token);
+        // res.json(token);
       } else {
         res.status(401).json({ message: `authentication failed` });
       }

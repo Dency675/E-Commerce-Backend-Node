@@ -20,7 +20,9 @@ export const verifyToken = (
     // Verify the token
     const decoded = jwt.verify(processed_token, secretKey);
 
+    console.log("********************");
     console.log(decoded);
+    console.log("********************");
     // Attach the decoded payload to the request object
     req.body.jwt_decoded = decoded;
     console.log(req.body.jwt_decoded)
