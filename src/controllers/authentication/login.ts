@@ -13,6 +13,8 @@ const login = async (req: Request, res: Response): Promise<void> => {
         raw: true,
       });
 
+      console.log(found);
+
       console.log(bcrypt.compareSync(password, found?.password as string));
 
       if (bcrypt.compareSync(password, found?.password as string)) {
@@ -23,8 +25,8 @@ const login = async (req: Request, res: Response): Promise<void> => {
           //   client_type,
           // },
           {
-            userID: found?.registration_id,
-            registrationId: found?.registration_id,
+            userID: found?.id,
+            registrationId: found?.registrationid,
             client_type,
           },
           "your-secret-key",
@@ -39,15 +41,39 @@ const login = async (req: Request, res: Response): Promise<void> => {
         res.status(401).json({ message: `authentication failed` });
       }
     } else if ("supplier") {
-      let found = await EcSuppliers.findOne({
-        where: { e_mail: { e_mail } },
+      const found = await EcSuppliers.findOne({
+        where: { e_mail },
         raw: true,
       });
 
       console.log(bcrypt.compareSync(password, found?.password as string));
 
+      // if (bcrypt.compareSync(password, found?.password as string)) {
+      //   res.send(`message : login s successfully`);
+      // } else {
+      //   res.status(401).json({ message: `authentication failed` });
+      // }
+
       if (bcrypt.compareSync(password, found?.password as string)) {
-        res.send(`message : login s successfully`);
+        const token = jwt.sign(
+          // {
+          //   //payloads
+          //   userID: found?.registration_id,
+          //   client_type,
+          // },
+          {
+            userID: found?.id,
+            registrationId: found?.registrationid,
+            client_type,
+          },
+          "your-secret-key",
+          { expiresIn: "24h" } //token expiration time
+        );
+
+        res.status(200).json({ token });
+
+        // res.send(`message : login successfully`);
+        // res.json(token);
       } else {
         res.status(401).json({ message: `authentication failed` });
       }

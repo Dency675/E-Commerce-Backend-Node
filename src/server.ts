@@ -8,20 +8,38 @@ import {
   middleFirstExample,
   middleSecondExample,
 } from "./middleware/middlewareExample.ts";
-import { verifyToken } from "./middleware/verifyJWT.ts";
+import { sequelizeSync } from "./services/sequelize.ts";
+import { connectToMongoDb, stopMongoDb } from "./services/mongodb.ts";
+import cors from "cors";
 
 const app: Express = express(); //the return of express function is stored in app
 
 const port = 3000 || process.env.port; //process.env.port takes value in the environment file and use that here
 
-sequelize
-  .sync({ force: false }) // Set force to true to drop and recreate tables on every application start
-  .then(() => {
-    console.log("Database synced");
-  })
-  .catch((error) => {
-    console.error("Error syncing database:", error);
-  });
+// sequelize
+//   .sync({ force: false }) // Set force to true to drop and recreate tables on every application start
+//   .then(() => {
+//     console.log("Database synced");
+//   })
+//   .catch((error) => {
+//     console.error("Error syncing database:", error);
+//   });
+
+sequelizeSync();
+connectToMongoDb();
+
+app.use(cors());
+
+const corsOptions = {
+  origin: "http://localhost:8080", //in port 8080 this server will be run
+  //in default origin is "*"
+  Accept: "application/json,text/plain",
+
+  methods: "GET,PUT,POST,PATCH,DELETE", // only allow this methods only
+  credentials: true, // accept the credentials
+  exposedHeaders: "X-Custom-Header",
+};
+// app.use(cors(corsOptions));
 
 app.use(express.urlencoded({ extended: true })); //to accept the encoded url
 
@@ -48,16 +66,32 @@ interface CustomerRequest extends Request {
 //   middleSecondExample(req, res, next);
 // });
 
-app.get("/middleware",middleFirstExample,middleSecondExample, (req: CustomerRequest, res: Response) => {
-  const customerProperty = req.customerProperty || "Not Available";
-  // console.log(`${customerProperty}`);
-  res.send(`${customerProperty}`);
-});
+app.get(
+  "/middleware",
+  middleFirstExample,
+  middleSecondExample,
+  (req: CustomerRequest, res: Response) => {
+    const customerProperty = req.customerProperty || "Not Available";
+    // console.log(`${customerProperty}`);
+    res.send(`${customerProperty}`);
+  }
+);
 
 app.use("/", loginRouter);
-app.use("/api/v1",middleFirstExample,middleSecondExample, supplierRouter);
+app.use("/api/v1", middleFirstExample, middleSecondExample, supplierRouter);
 app.use("/api/v2", customerRouter);
 
 app.listen(port, () => {
   console.log(`The port ${port} running`);
+});
+
+process.on("SIGINT", () => {
+  sequelize.close();
+  stopMongoDb();
+  process.exit();
+});
+
+process.on("exit", () => {
+  sequelize.close();
+  stopMongoDb();
 });

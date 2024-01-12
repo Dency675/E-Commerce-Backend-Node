@@ -13,10 +13,12 @@ const resetPassword = async (req: Request, res: Response): Promise<void> => {
     console.log("\nn\n\n\nn\n")
     const { client_type } = req.body.jwt_decoded;
     if (client_type == "customer") {
+
       const new_user_password = bcrypt.hashSync(
         new_password,
         bcrypt.genSaltSync(10)
       );
+      
       await EcCustomers.update(
         { password: new_user_password },
         {
